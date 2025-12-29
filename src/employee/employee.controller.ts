@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, Delete, Query } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
@@ -13,8 +13,14 @@ export class EmployeeController {
   }
 
   @Get()
-  findAll() {
-    return this.svc.findAll();
+  findAll(
+    @Query('search') search?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10'
+  ) {
+    const p = Number(page) || 1;
+    const l = Number(limit) || 10;
+    return this.svc.findAll({ search, page: p, limit: l });
   }
 
   @Get(':id')

@@ -17,8 +17,20 @@ export class EmployeeService {
     return this.repo.save(ent);
   }
 
-  findAll() {
-    return this.repo.find();
+  findAll(opts?: { page?: number; limit?: number; search?: string }) {
+    const qb = this.repo.createQueryBuilder('employee');
+    if (opts?.search) {
+      qb.where(
+        'employee.firstName ILIKE :s OR employee.lastName ILIKE :s OR employee.email ILIKE :s',
+        { s: `%${opts.search}%` }
+      );
+    }
+
+    const page = opts?.page && opts.page > 0 ? opts.page : 1;
+    const limit = opts?.limit && opts.limit > 0 ? Math.min(opts.limit, 100) : 10;
+    qb.skip((page - 1) * limit).take(limit);
+
+    return qb.getMany();
   }
 
   async findOne(id: string) {
