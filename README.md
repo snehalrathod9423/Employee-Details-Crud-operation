@@ -1,51 +1,144 @@
-# Employee CRUD - NestJS + TypeORM + Postgres
-```markdown
-# Employee CRUD - NestJS + TypeORM + Postgres
+Employee Details CRUD Operation 🚀
 
-Minimal scaffold for Employee CRUD using NestJS and TypeORM.
+This project is a backend REST API built using NestJS that performs CRUD (Create, Read, Update, Delete) operations for Employee details.
+It uses PostgreSQL as the database, TypeORM for database interaction, and Docker for containerization.
+The project follows clean architecture and Git best practices.
 
-Setup
+🛠 Tech Stack
 
-1. Copy `.env.example` to `.env` and fill DB values (or edit the provided `.env`).
-2. Install dependencies:
+Backend Framework: NestJS
 
-```powershell
-npm install
-```
+Language: TypeScript
 
-3. Run in development:
+Database: PostgreSQL
 
-```powershell
-npm run start:dev
-```
+ORM: TypeORM
 
-API Endpoints
+Containerization: Docker & Docker Compose
 
-- POST /employees - create
-- GET /employees - list
-- GET /employees/:id - get one
-- PATCH /employees/:id - update
-- DELETE /employees/:id - remove
+Version Control: Git & GitHub
+
+✨ Features
+
+Create new employee
+
+Get all employees
+
+Get employee by ID
+
+Update employee details
+
+Delete employee
+
+PostgreSQL database integration
+
+Environment-based configuration
+
+Dockerized setup
+
+Proper folder structure
+
+📁 Project Structure
+src/
+├── employee/
+│   ├── employee.controller.ts
+│   ├── employee.service.ts
+│   ├── employee.entity.ts
+│   ├── employee.module.ts
+│
+├── app.module.ts
+├── main.ts
+
+⚙️ Prerequisites
+
+Make sure you have installed:
+
+Node.js (v18+ recommended)
+
+npm
+
+PostgreSQL (if not using Docker)
+
+Docker & Docker Compose
 
 Git
 
-```powershell
-git init
-git add .
-git commit -m "Initial NestJS TypeORM Employee CRUD"
-```
+🗄 Database Setup (Without Docker)
 
-Docker
+Install PostgreSQL
 
-Run the application and Postgres with Docker Compose:
+Create database:
 
-```powershell
+CREATE DATABASE employee_db;
+
+
+Default configuration:
+
+Username: postgres
+
+Password: your_password
+
+Port: 5432
+
+🔐 Environment Variables
+
+Create a .env file in the root directory:
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
+DB_NAME=employee_db
+
+▶️ Running the Project (Without Docker)
+npm install
+npm run start:dev
+
+
+Server will run on:
+
+http://localhost:3000
+
+🐳 Running the Project (With Docker)
+
+Build and start containers:
+
 docker-compose up --build
-```
 
-This exposes the API on port `3000` and Postgres on `5432`. The project uses the `.env` file for database credentials (a default `.env` was added). To use the DB from within the app container, `DB_HOST` is set to the service name `db`.
 
-Notes:
-- For development you may prefer `npm run start:dev` locally instead of running inside Docker.
-- The Dockerfile builds the app and runs `node dist/main.js`.
-```
+API will be available at:
+
+http://localhost:3000
+
+📌 API Endpoints
+Method	Endpoint	Description
+POST	/employees	Create employee
+GET	/employees	Get all employees
+GET	/employees/:id	Get employee by ID
+PUT	/employees/:id	Update employee
+DELETE	/employees/:id	Delete employee
+🧪 Sample Employee JSON
+{
+  "name": "Snehal Rathod",
+  "email": "snehal@example.com",
+  "designation": "Software Developer",
+  "salary": 50000
+}
+
+🔄 Git Workflow
+git status
+git add .
+git commit -m "Added employee CRUD with PostgreSQL"
+git push origin main
+
+🚀 Future Enhancements
+
+Authentication & Authorization (JWT)
+
+Pagination & Filtering
+
+Input validation using DTOs
+
+Swagger API documentation
+
+Role-based access control
