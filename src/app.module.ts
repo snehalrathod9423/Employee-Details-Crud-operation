@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import * as dotenv from 'dotenv';
-dotenv.config(); // 👈 ADD THIS AT THE VERY TOP
+dotenv.config(); // Load environment variables at the very top
 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,7 +17,8 @@ const useSqlite = process.env.USE_SQLITE === '1';
             type: 'sqlite',
             database: process.env.SQLITE_DB || 'database.sqlite',
             entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-            synchronize: true,
+            synchronize: true, // Auto-create tables (development only)
+            logging: true,
           }
         : {
             type: 'postgres',
@@ -27,10 +28,13 @@ const useSqlite = process.env.USE_SQLITE === '1';
             password: process.env.DB_PASS || 'postgres',
             database: process.env.DB_NAME || 'employee_db',
             entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-            synchronize: true,
-          }
+            synchronize: true, // Auto-create tables (development only)
+            logging: true,      // Logs SQL queries for debugging
+          },
     ),
     EmployeeModule,
   ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

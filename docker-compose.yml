@@ -9,9 +9,30 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS}
       - POSTGRES_DB=${DB_NAME}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: employee_app
+    env_file: .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - USE_SQLITE=0
+      - PORT=3000
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    command: ["sh", "-c", "npm run build && node dist/main.js"]
+    restart: on-failure
 
 volumes:
   db-data:
