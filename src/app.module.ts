@@ -3,18 +3,29 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from './employee/employee.module';
 import { join } from 'path';
 
+const useSqlite = process.env.USE_SQLITE === '1';
+
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
-      username: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASS || 'postgres',
-      database: process.env.DB_NAME || 'employee_db',
-      entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-      synchronize: true
-    }),
+    TypeOrmModule.forRoot(
+      useSqlite
+        ? {
+            type: 'sqlite',
+            database: process.env.SQLITE_DB || 'database.sqlite',
+            entities: [join(__dirname, '**', '*.entity.{ts,js}')],
+            synchronize: true
+          }
+        : {
+            type: 'postgres',
+            host: process.env.DB_HOST || 'localhost',
+            port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
+            username: process.env.DB_USER || 'postgres',
+            password: process.env.DB_PASS || 'postgres',
+            database: process.env.DB_NAME || 'employee_db',
+            entities: [join(__dirname, '**', '*.entity.{ts,js}')],
+            synchronize: true
+          }
+    ),
     EmployeeModule
   ],
   controllers: [],
