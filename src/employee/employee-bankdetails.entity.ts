@@ -5,12 +5,12 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { Employee } from '../employee/employee.entity';
+import { Employee } from './employee.entity';
 
 @Entity('employee_bankdetails')
 export class EmployeeBankDetails {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: string;
 
   @Column()
   bankName: string;
@@ -21,9 +21,7 @@ export class EmployeeBankDetails {
   @Column()
   ifscCode: string;
 
-  @OneToOne(() => Employee, employee => employee.bankDetails, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(() => Employee, employee => employee.bankDetails)
   @JoinColumn({ name: 'employee_id' })
   employee: Employee;
 }

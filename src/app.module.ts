@@ -1,40 +1,26 @@
 import 'reflect-metadata';
 import * as dotenv from 'dotenv';
-dotenv.config(); // Load environment variables at the very top
+dotenv.config();
 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from './employee/employee.module';
 import { join } from 'path';
 
-const useSqlite = process.env.USE_SQLITE === '1';
-
 @Module({
   imports: [
-    TypeOrmModule.forRoot(
-      useSqlite
-        ? {
-            type: 'sqlite',
-            database: process.env.SQLITE_DB || 'database.sqlite',
-            entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-            synchronize: true, // Auto-create tables (development only)
-            logging: true,
-          }
-        : {
-            type: 'postgres',
-            host: process.env.DB_HOST || 'localhost',
-            port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
-            username: process.env.DB_USER || 'postgres',
-            password: process.env.DB_PASS || 'postgres',
-            database: process.env.DB_NAME || 'employee_db',
-            entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-            synchronize: true, // Auto-create tables (development only)
-            logging: true,      // Logs SQL queries for debugging
-          },
-    ),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
+      entities: [join(__dirname, '**', '*.entity.{ts,js}')],
+      synchronize: true, // dev only
+      logging: true,
+    }),
     EmployeeModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

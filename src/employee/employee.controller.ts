@@ -18,11 +18,13 @@ import { CreateEmployeeWithDetailsDto } from './dto/create-employee-with-details
 export class EmployeeController {
   constructor(private readonly svc: EmployeeService) {}
 
+  // Basic create (employee only)
   @Post()
   create(@Body() dto: CreateEmployeeDto) {
     return this.svc.create(dto);
   }
 
+  // Get all employees (pagination + search)
   @Get()
   findAll(
     @Query('search') search?: string,
@@ -34,30 +36,28 @@ export class EmployeeController {
     return this.svc.findAll({ search, page: p, limit: l });
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.svc.findOne(id);
+  // Get employee with address + bank details
+  @Get(':id/with-details')
+  getEmployeeWithDetails(@Param('id') id: string) {
+    return this.svc.findOneWithDetails(id);
   }
 
+  // Update employee
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateEmployeeDto) {
     return this.svc.update(id, dto);
   }
 
+  // Delete employee
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.svc.remove(id);
   }
 
-  // ✅ NEW API – create employee + address + bank
+  // ✅ MAIN API: create employee + address + bank (single payload)
   @Post('with-details')
-  createEmployeeWithDetails(@Body() body: CreateEmployeeWithDetailsDto) {
-    return this.svc.createEmployeeWithDetails(body);
-  }
-
-  // ✅ GET employee with all details
-  @Get(':id/with-details')
-  getEmployeeWithDetails(@Param('id') id: string) {
-    return this.svc.findOneWithDetails(id);
+  createEmployeeWithDetails(@Body() dto: CreateEmployeeWithDetailsDto) {
+    return this.svc.createEmployeeWithDetails(dto);
   }
 }
+

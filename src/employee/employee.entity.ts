@@ -6,8 +6,9 @@ import {
   UpdateDateColumn,
   OneToOne,
 } from 'typeorm';
-import { EmployeeAddress } from '../employee-address/employee-address.entity';
-import { EmployeeBankDetails } from '../employee-bankdetails/employee-bankdetails.entity';
+import { EmployeeAddress } from './employee-address.entity';
+import { EmployeeBankDetails } from './employee-bankdetails.entity';
+
 
 @Entity()
 export class Employee {

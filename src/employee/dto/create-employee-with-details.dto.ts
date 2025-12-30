@@ -1,14 +1,11 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
-
 export class CreateEmployeeWithDetailsDto {
-  @IsNotEmpty()
+  id?: string; // optional, not used for insert
+
   firstName: string;
-
-  @IsNotEmpty()
   lastName: string;
-
-  @IsEmail()
   email: string;
+  position?: string;
+  salary?: number;
 
   address: {
     city: string;
