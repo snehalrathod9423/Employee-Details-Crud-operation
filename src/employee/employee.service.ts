@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Employee } from './employee.entity';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { CreateEmployeeWithDetailsDto } from './dto/create-employee-with-details.dto';
 
 @Injectable()
 export class EmployeeService {
@@ -50,4 +51,42 @@ export class EmployeeService {
     await this.repo.remove(e);
     return { deleted: true };
   }
+
+  async createEmployeeWithDetails(dto: CreateEmployeeWithDetailsDto) {
+  const employee = this.repo.create({
+    firstName: dto.firstName,
+    lastName: dto.lastName,
+    email: dto.email,
+
+    addresses: [
+      {
+        city: dto.address.city,
+        state: dto.address.state,
+        pincode: dto.address.pincode,
+      },
+    ],
+
+    bankDetails: [
+      {
+        bankName: dto.bankDetails.bankName,
+        accountNumber: dto.bankDetails.accountNumber,
+        ifscCode: dto.bankDetails.ifscCode,
+      },
+    ],
+  });
+
+  return await this.repo.save(employee);
+  }
+  async findOneWithDetails(id: string) {
+  const employee = await this.repo.findOne({
+    where: { id },
+    relations: ['addresses', 'bankDetails'],
+  });
+
+  if (!employee) {
+    throw new NotFoundException('Employee not found');
+  }
+
+  return employee;
+ }
 }

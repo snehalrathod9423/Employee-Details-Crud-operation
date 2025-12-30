@@ -37,4 +37,15 @@ export class EmployeeController {
   remove(@Param('id') id: string) {
     return this.svc.remove(id);
   }
+
+  @Post('with-details')
+createEmployeeWithDetails(@Body() body: CreateEmployeeWithDetailsDto) {
+  return this.employeeService.createEmployeeWithDetails(body);
+}
+
+@Get(':id/with-details')
+getEmployeeWithDetails(@Param('id') id: string) {
+  return this.employeeService.findOneWithDetails(id);
+}
+
 }
