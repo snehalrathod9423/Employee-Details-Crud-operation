@@ -1,7 +1,18 @@
-import { Controller, Post, Body, Get, Param, Patch, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Patch,
+  Delete,
+  Query,
+} from '@nestjs/common';
+
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { CreateEmployeeWithDetailsDto } from './dto/create-employee-with-details.dto';
 
 @Controller('employees')
 export class EmployeeController {
@@ -16,7 +27,7 @@ export class EmployeeController {
   findAll(
     @Query('search') search?: string,
     @Query('page') page = '1',
-    @Query('limit') limit = '10'
+    @Query('limit') limit = '10',
   ) {
     const p = Number(page) || 1;
     const l = Number(limit) || 10;
@@ -38,12 +49,15 @@ export class EmployeeController {
     return this.svc.remove(id);
   }
 
+  // ✅ NEW API – create employee + address + bank
   @Post('with-details')
-createEmployeeWithDetails(@Body() body: CreateEmployeeWithDetailsDto) {
-  return this.employeeService.createEmployeeWithDetails(body);
-}
+  createEmployeeWithDetails(@Body() body: CreateEmployeeWithDetailsDto) {
+    return this.svc.createEmployeeWithDetails(body);
+  }
 
-@Get(':id/with-details')
-getEmployeeWithDetails(@Param('id') id: string) {
-  return this.employeeService.findOneWithDetails(id);
+  // ✅ GET employee with all details
+  @Get(':id/with-details')
+  getEmployeeWithDetails(@Param('id') id: string) {
+    return this.svc.findOneWithDetails(id);
+  }
 }
