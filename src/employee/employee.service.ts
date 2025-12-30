@@ -5,6 +5,8 @@ import { Employee } from './employee.entity';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { CreateEmployeeWithDetailsDto } from './dto/create-employee-with-details.dto';
+import { EmployeeAddress } from '../employee-address/employee-address.entity';
+import { EmployeeBankDetails } from '../employee-bankdetails/employee-bankdetails.entity';
 
 @Injectable()
 export class EmployeeService {
@@ -52,41 +54,52 @@ export class EmployeeService {
     return { deleted: true };
   }
 
+  // ✅ Create employee with address & bank details
   async createEmployeeWithDetails(dto: CreateEmployeeWithDetailsDto) {
-  const employee = this.repo.create({
-    firstName: dto.firstName,
-    lastName: dto.lastName,
-    email: dto.email,
+    // Create address entity
+    const address = new EmployeeAddress();
+    address.addressLine1 = dto.address.addressLine1;
+    address.city = dto.address.city;
+    address.state = dto.address.state;
+    address.pincode = dto.address.pincode;
 
-    addresses: [
-      {
-        city: dto.address.city,
-        state: dto.address.state,
-        pincode: dto.address.pincode,
-      },
-    ],
+    // Create bank details entity
+    const bankDetails = new EmployeeBankDetails();
+    bankDetails.bankName = dto.bankDetails.bankName;
+    bankDetails.accountNumber = dto.bankDetails.accountNumber;
+    bankDetails.ifscCode = dto.bankDetails.ifscCode;
 
-    bankDetails: [
-      {
-        bankName: dto.bankDetails.bankName,
-        accountNumber: dto.bankDetails.accountNumber,
-        ifscCode: dto.bankDetails.ifscCode,
-      },
-    ],
-  });
+    // Create employee and assign relations
+    const employee = this.repo.create({
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      email: dto.email,
+      position: dto.position,
+      salary: dto.salary,
+      address: address,
+      bankDetails: bankDetails,
+    });
 
-  return await this.repo.save(employee);
+    return await this.repo.save(employee);
   }
+
+  // ✅ Get employee with address & bank details
   async findOneWithDetails(id: string) {
-  const employee = await this.repo.findOne({
-    where: { id },
-    relations: ['addresses', 'bankDetails'],
-  });
+    const employee = await this.repo.findOne({
+      where: { id },
+      relations: ['address', 'bankDetails'], // match OneToOne relations
+    });
 
-  if (!employee) {
-    throw new NotFoundException('Employee not found');
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
+
+    return employee;
   }
-
-  return employee;
- }
+  async getEmployeeFullData(id: string) {
+  return this.employeeRepository.findOne({
+    where: { id },
+    relations: ['address', 'bankDetails'],
+  });
+ } 
 }
