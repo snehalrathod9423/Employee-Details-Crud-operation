@@ -1,8 +1,8 @@
-Employee Details CRUD Operation 🚀
+🧑‍💼 Employee Details CRUD – Extended Implementation
+📌 Overview
 
-This project is a backend REST API built using NestJS that performs CRUD (Create, Read, Update, Delete) operations for Employee details.
-It uses PostgreSQL as the database, TypeORM for database interaction, and Docker for containerization.
-The project follows clean architecture and Git best practices.
+This project is a NestJS + TypeORM + PostgreSQL based backend application that performs CRUD operations on Employee data.
+It has been extended to support related tables (employee_address, employee_bankdetails) and handle single-payload inserts into multiple tables using TypeORM relations and cascading.
 
 🛠 Tech Stack
 
@@ -10,135 +10,167 @@ Backend Framework: NestJS
 
 Language: TypeScript
 
-Database: PostgreSQL
-
 ORM: TypeORM
 
-Containerization: Docker & Docker Compose
+Database: PostgreSQL (SQLite supported for local testing)
 
-Version Control: Git & GitHub
+API Style: REST
 
-✨ Features
+Tools: Postman, pgAdmin
 
-Create new employee
+🗄 Database Design
+Tables
 
-Get all employees
+employee
 
-Get employee by ID
+employee_address
 
-Update employee details
+employee_bankdetails
 
-Delete employee
+Relationships
 
-PostgreSQL database integration
+One Employee → One Address
 
-Environment-based configuration
+One Employee → One Bank Details
 
-Dockerized setup
+All relations are implemented using One-to-One mapping with foreign key (employee_id).
 
-Proper folder structure
+🧩 Entity Relationship (Conceptual)
+employee
+ ├── employee_address
+ └── employee_bankdetails
 
-📁 Project Structure
-src/
-├── employee/
-│   ├── employee.controller.ts
-│   ├── employee.service.ts
-│   ├── employee.entity.ts
-│   ├── employee.module.ts
-│
-├── app.module.ts
-├── main.ts
+🚀 Features Implemented
 
-⚙️ Prerequisites
+✅ Create employee
 
-Make sure you have installed:
+✅ Update employee
 
-Node.js (v18+ recommended)
+✅ Delete employee
 
-npm
+✅ Pagination & search
 
-PostgreSQL (if not using Docker)
+✅ Create employee with address & bank details (single payload)
 
-Docker & Docker Compose
+✅ Fetch employee with all related details
 
-Git
+✅ UUID-based primary keys
 
-🗄 Database Setup (Without Docker)
+✅ PostgreSQL integration via environment variables
 
-Install PostgreSQL
+📥 Create Employee With Full Details (Main Feature)
+Endpoint
+POST /employees/with-details
 
-Create database:
+Request Body
+{
+  "firstName": "Snehal",
+  "lastName": "Rathod",
+  "email": "snehalrathod@gmail.com",
+  "position": "Backend Developer",
+  "salary": 50000,
+  "address": {
+    "city": "Pune",
+    "state": "MH",
+    "pincode": "411001"
+  },
+  "bankDetails": {
+    "bankName": "HDFC",
+    "accountNumber": "123456789",
+    "ifscCode": "HDFC000123"
+  }
+}
 
-CREATE DATABASE employee_db;
+Description
 
+Accepts single payload
 
-Default configuration:
+Inserts data into:
 
-Username: postgres
+employee
 
-Password: your_password
+employee_address
 
-Port: 5432
+employee_bankdetails
 
-🔐 Environment Variables
+Uses TypeORM cascade to persist related entities automatically
 
-Create a .env file in the root directory:
+📤 Fetch Employee With Full Details
+Endpoint
+GET /employees/{id}/with-details
+
+Response
+{
+  "id": "uuid",
+  "firstName": "Snehal",
+  "lastName": "Rathod",
+  "email": "snehalrathod@gmail.com",
+  "position": "Backend Developer",
+  "salary": 50000,
+  "address": {
+    "city": "Pune",
+    "state": "MH",
+    "pincode": "411001"
+  },
+  "bankDetails": {
+    "bankName": "HDFC",
+    "accountNumber": "123456789",
+    "ifscCode": "HDFC000123"
+  }
+}
+
+🔐 Environment Configuration
+
+Create a .env file:
 
 DB_HOST=localhost
 DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=your_password
+DB_USER=postgres
+DB_PASS=postgres
 DB_NAME=employee_db
+PORT=3000
 
-▶️ Running the Project (Without Docker)
+▶️ Running the Application
+Install dependencies
 npm install
+
+Start the server
 npm run start:dev
 
 
-Server will run on:
+Server will run at:
 
 http://localhost:3000
 
-🐳 Running the Project (With Docker)
+🧠 Key Design Decisions
 
-Build and start containers:
+UUID used as primary key for scalability
 
-docker-compose up --build
+Cascade insert used to avoid manual multi-table saves
 
+DTO-based request validation for clean API contracts
 
-API will be available at:
+Relations fetching using TypeORM relations option
 
-http://localhost:3000
+📌 Notes
 
-📌 API Endpoints
-Method	Endpoint	Description
-POST	/employees	Create employee
-GET	/employees	Get all employees
-GET	/employees/:id	Get employee by ID
-PUT	/employees/:id	Update employee
-DELETE	/employees/:id	Delete employee
-🧪 Sample Employee JSON
-{
-  "name": "Snehal Rathod",
-  "email": "snehal@example.com",
-  "designation": "Software Developer",
-  "salary": 50000
-}
+synchronize: true is enabled only for development
 
-🔄 Git Workflow
-git status
-git add .
-git commit -m "Added employee CRUD with PostgreSQL"
-git push origin main
+For production, migrations should be used
 
-🚀 Future Enhancements
+position and salary are nullable by design
 
-Authentication & Authorization (JWT)
+🏁 Conclusion
 
-Pagination & Filtering
+This project demonstrates a real-world NestJS backend pattern, including:
 
-Input validation using DTOs
+Clean architecture
 
-Swagger API documentation
+Relational database handling
 
-Role-based access control
+Single API → multiple table inserts
+
+PostgreSQL integration
+
+It is suitable for internship assignments, interviews, and learning purposes.
+
