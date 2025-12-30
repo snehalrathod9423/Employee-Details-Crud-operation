@@ -47,5 +47,3 @@ createEmployeeWithDetails(@Body() body: CreateEmployeeWithDetailsDto) {
 getEmployeeWithDetails(@Param('id') id: string) {
   return this.employeeService.findOneWithDetails(id);
 }
-
-}
