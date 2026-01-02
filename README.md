@@ -2,7 +2,10 @@
 📌 Overview
 
 This project is a NestJS + TypeORM + PostgreSQL based backend application that performs CRUD operations on Employee data.
+
 It has been extended to support related tables (employee_address, employee_bankdetails) and handle single-payload inserts into multiple tables using TypeORM relations and cascading.
+
+The project was further enhanced with authentication middleware, rate limiting, PDF generation, and CSV export features.
 
 🛠 Tech Stack
 
@@ -41,6 +44,7 @@ employee
  └── employee_bankdetails
 
 🚀 Features Implemented
+Core Features
 
 ✅ Create employee
 
@@ -58,9 +62,42 @@ employee
 
 ✅ PostgreSQL integration via environment variables
 
+🔐 Security & System Enhancements (New)
+✅ Role-Based Middleware
+
+Simple role-based authentication using request headers
+
+Supported roles:
+
+ADMIN
+
+HR
+
+EMPLOYEE
+
+Middleware validates role before request reaches controller
+
+Example Header:
+
+role: ADMIN
+
+✅ Rate Limiting
+
+Implemented using NestJS Throttler
+
+Limits requests to:
+
+10 requests per minute per client
+
+Prevents API abuse
+
 📥 Create Employee With Full Details (Main Feature)
 Endpoint
 POST /employees/with-details
+
+Headers
+role: ADMIN
+Content-Type: application/json
 
 Request Body
 {
@@ -83,7 +120,7 @@ Request Body
 
 Description
 
-Accepts single payload
+Accepts a single payload
 
 Inserts data into:
 
@@ -98,6 +135,9 @@ Uses TypeORM cascade to persist related entities automatically
 📤 Fetch Employee With Full Details
 Endpoint
 GET /employees/{id}/with-details
+
+Headers
+role: ADMIN
 
 Response
 {
@@ -118,6 +158,42 @@ Response
     "ifscCode": "HDFC000123"
   }
 }
+
+📄 Generate Employee PDF (New Feature)
+Endpoint
+GET /employees/pdf/{id}
+
+Headers
+role: ADMIN
+
+Description
+
+Generates a PDF file containing:
+
+Employee basic details
+
+Address details
+
+Bank details
+
+Uses pdfkit
+
+Returns PDF as a downloadable file
+
+📊 Export Employees as CSV (New Feature)
+Endpoint
+GET /employees/export/csv
+
+Headers
+role: ADMIN
+
+Description
+
+Exports all employees into a CSV file
+
+Uses json2csv
+
+Useful for reporting and data sharing
 
 🔐 Environment Configuration
 
@@ -148,9 +224,13 @@ UUID used as primary key for scalability
 
 Cascade insert used to avoid manual multi-table saves
 
-DTO-based request validation for clean API contracts
+Middleware used instead of complex auth libraries (simple & clear)
 
-Relations fetching using TypeORM relations option
+Rate limiting applied globally
+
+Controller handles response, service handles business logic
+
+Relations fetched using TypeORM relations option
 
 📌 Notes
 
@@ -159,6 +239,8 @@ synchronize: true is enabled only for development
 For production, migrations should be used
 
 position and salary are nullable by design
+
+Role header is mandatory for API access
 
 🏁 Conclusion
 
@@ -170,7 +252,10 @@ Relational database handling
 
 Single API → multiple table inserts
 
+Role-based middleware
+
+Rate limiting
+
+PDF & CSV generation
+
 PostgreSQL integration
-
-It is suitable for internship assignments, interviews, and learning purposes.
-

@@ -9,7 +9,6 @@ import {
 import { EmployeeAddress } from './employee-address.entity';
 import { EmployeeBankDetails } from './employee-bankdetails.entity';
 
-
 @Entity()
 export class Employee {
   @PrimaryGeneratedColumn('uuid')
@@ -29,6 +28,9 @@ export class Employee {
 
   @Column('numeric', { nullable: true })
   salary: number;
+
+  @Column({ default: 'EMPLOYEE' })
+  role: string; // ADMIN | HR | EMPLOYEE
 
   @OneToOne(() => EmployeeAddress, address => address.employee, {
     cascade: true,

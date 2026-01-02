@@ -10,7 +10,7 @@ import { Employee } from './employee.entity';
 @Entity('employee_address')
 export class EmployeeAddress {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number; // ✅ FIXED (number, not string)
 
   @Column()
   city: string;

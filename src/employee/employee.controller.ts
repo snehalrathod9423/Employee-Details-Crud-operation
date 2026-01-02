@@ -7,7 +7,9 @@ import {
   Patch,
   Delete,
   Query,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -54,10 +56,37 @@ export class EmployeeController {
     return this.svc.remove(id);
   }
 
-  // ✅ MAIN API: create employee + address + bank (single payload)
+  // Create employee + address + bank (single payload)
   @Post('with-details')
   createEmployeeWithDetails(@Body() dto: CreateEmployeeWithDetailsDto) {
     return this.svc.createEmployeeWithDetails(dto);
   }
-}
 
+  // Download employee details as PDF
+  @Get('pdf/:id')
+  async downloadPdf(@Param('id') id: string, @Res() res: Response) {
+    const pdfBuffer = await this.svc.generateEmployeePdf(id);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=employee.pdf',
+    );
+
+    res.send(pdfBuffer);
+  }
+
+  // Export all employees as CSV
+  @Get('export/csv')
+  async exportCsv(@Res() res: Response) {
+    const csv = await this.svc.exportEmployeesCsv();
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=employees.csv',
+    );
+
+    res.send(csv);
+  }
+}

@@ -2,10 +2,12 @@ import 'reflect-metadata';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from './employee/employee.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
+import { RoleMiddleware } from './common/middleware/role.middleware';
 
 @Module({
   imports: [
@@ -20,7 +22,15 @@ import { join } from 'path';
       synchronize: true, // dev only
       logging: true,
     }),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 10,
+    }),
     EmployeeModule,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RoleMiddleware).forRoutes('*');
+  }
+}
