@@ -1,11 +1,11 @@
 🧑‍💼 Employee Details CRUD – Extended Implementation
 📌 Overview
 
-This project is a NestJS + TypeORM + PostgreSQL based backend application that performs CRUD operations on Employee data.
+This project is a backend application built using NestJS, TypeORM, and PostgreSQL to perform CRUD operations on Employee data.
 
-It has been extended to support related tables (employee_address, employee_bankdetails) and handle single-payload inserts into multiple tables using TypeORM relations and cascading.
+It supports relational data handling with multiple tables (employee, employee_address, employee_bankdetails) and allows inserting data into multiple tables using a single payload through TypeORM cascading.
 
-The project was further enhanced with authentication middleware, rate limiting, PDF generation, and CSV export features.
+The project has been further enhanced with JWT-based authentication, role-based access control, email notifications, rate limiting, PDF generation, and CSV export features.
 
 🛠 Tech Stack
 
@@ -16,6 +16,12 @@ Language: TypeScript
 ORM: TypeORM
 
 Database: PostgreSQL (SQLite supported for local testing)
+
+Authentication: JWT
+
+Validation: Joi
+
+Email: Nodemailer + Handlebars
 
 API Style: REST
 
@@ -30,13 +36,15 @@ employee_address
 
 employee_bankdetails
 
+users
+
 Relationships
 
 One Employee → One Address
 
 One Employee → One Bank Details
 
-All relations are implemented using One-to-One mapping with foreign key (employee_id).
+All relationships are implemented using One-to-One mapping with foreign key references.
 
 🧩 Entity Relationship (Conceptual)
 employee
@@ -44,44 +52,153 @@ employee
  └── employee_bankdetails
 
 🚀 Features Implemented
-Core Features
+🔐 Authentication & Authorization (New)
 
-✅ Create employee
+User SignUp and SignIn using JWT authentication
 
-✅ Update employee
+JWT token expiry set to 5 minutes
 
-✅ Delete employee
+Password hashing using bcrypt
 
-✅ Pagination & search
+Protected APIs using JWT guards
 
-✅ Create employee with address & bank details (single payload)
+Role-Based Access Control (RBAC)
 
-✅ Fetch employee with all related details
+Only Admin users can add employees
 
-✅ UUID-based primary keys
+👤 User APIs
 
-✅ PostgreSQL integration via environment variables
+SignUp
 
-🔐 Security & System Enhancements (New)
-✅ Role-Based Middleware
+Validates name, email, password, mobile number, and role (Admin, Manager)
 
-Simple role-based authentication using request headers
+Checks if email already exists
 
-Supported roles:
+Stores encrypted password
 
-ADMIN
+SignIn
 
-HR
+Validates credentials
 
-EMPLOYEE
+Returns JWT token with expiry
 
-Middleware validates role before request reaches controller
+getUserDetails
 
-Example Header:
+Fetches logged-in user details using token authentication
 
-role: ADMIN
+👨‍💼 Employee Management
 
-✅ Rate Limiting
+Create employee
+
+Update employee
+
+Delete employee
+
+Pagination and search support
+
+Create employee with address & bank details using a single payload
+
+Fetch employee along with all related details
+
+Auto-generate password for newly added employees (Admin only)
+
+Securely store generated passwords using bcrypt
+
+📥 Create Employee With Full Details
+
+Endpoint
+
+POST /employees/with-details
+
+
+Headers
+
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+
+
+Request Body
+
+{
+  "firstName": "Snehal",
+  "lastName": "Rathod",
+  "email": "snehalrathod@gmail.com",
+  "position": "Backend Developer",
+  "salary": 50000,
+  "address": {
+    "city": "Pune",
+    "state": "MH",
+    "pincode": "411001"
+  },
+  "bankDetails": {
+    "bankName": "HDFC",
+    "accountNumber": "123456789",
+    "ifscCode": "HDFC000123"
+  }
+}
+
+
+Description
+
+Accepts a single payload
+
+Inserts data into employee, employee_address, and employee_bankdetails
+
+Uses TypeORM cascade to persist related entities
+
+📤 Fetch Employee With Full Details
+
+Endpoint
+
+GET /employees/{id}/with-details
+
+
+Headers
+
+Authorization: Bearer <JWT_TOKEN>
+
+📧 Email Notification (New)
+
+Integrated Nodemailer with Gmail SMTP
+
+Used Handlebars templates for dynamic HTML emails
+
+Automatically sends welcome email with login credentials
+
+Credentials are shared in table format
+
+Email is triggered when an Admin adds a new employee
+
+📄 Generate Employee PDF
+
+Endpoint
+
+GET /employees/pdf/{id}
+
+
+Description
+
+Generates a downloadable PDF containing:
+
+Employee details
+
+Address details
+
+Bank details
+
+Implemented using pdfkit
+
+📊 Export Employees as CSV
+
+Endpoint
+
+GET /employees/export/csv
+
+
+Description
+Final exports all employee records into a CSV file using json2csv.
+
+🚦 Rate Limiting
 
 Implemented using NestJS Throttler
 
@@ -91,126 +208,32 @@ Limits requests to:
 
 Prevents API abuse
 
-📥 Create Employee With Full Details (Main Feature)
-Endpoint
-POST /employees/with-details
-
-Headers
-role: ADMIN
-Content-Type: application/json
-
-Request Body
-{
-  "firstName": "Snehal",
-  "lastName": "Rathod",
-  "email": "snehalrathod@gmail.com",
-  "position": "Backend Developer",
-  "salary": 50000,
-  "address": {
-    "city": "Pune",
-    "state": "MH",
-    "pincode": "411001"
-  },
-  "bankDetails": {
-    "bankName": "HDFC",
-    "accountNumber": "123456789",
-    "ifscCode": "HDFC000123"
-  }
-}
-
-Description
-
-Accepts a single payload
-
-Inserts data into:
-
-employee
-
-employee_address
-
-employee_bankdetails
-
-Uses TypeORM cascade to persist related entities automatically
-
-📤 Fetch Employee With Full Details
-Endpoint
-GET /employees/{id}/with-details
-
-Headers
-role: ADMIN
-
-Response
-{
-  "id": "uuid",
-  "firstName": "Snehal",
-  "lastName": "Rathod",
-  "email": "snehalrathod@gmail.com",
-  "position": "Backend Developer",
-  "salary": 50000,
-  "address": {
-    "city": "Pune",
-    "state": "MH",
-    "pincode": "411001"
-  },
-  "bankDetails": {
-    "bankName": "HDFC",
-    "accountNumber": "123456789",
-    "ifscCode": "HDFC000123"
-  }
-}
-
-📄 Generate Employee PDF (New Feature)
-Endpoint
-GET /employees/pdf/{id}
-
-Headers
-role: ADMIN
-
-Description
-
-Generates a PDF file containing:
-
-Employee basic details
-
-Address details
-
-Bank details
-
-Uses pdfkit
-
-Returns PDF as a downloadable file
-
-📊 Export Employees as CSV (New Feature)
-Endpoint
-GET /employees/export/csv
-
-Headers
-role: ADMIN
-
-Description
-
-Exports all employees into a CSV file
-
-Uses json2csv
-
-Useful for reporting and data sharing
-
 🔐 Environment Configuration
 
-Create a .env file:
+Create a .env file in the root directory:
 
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASS=postgres
+DB_PASS=your_db_password
 DB_NAME=employee_db
+
+JWT_SECRET=your_jwt_secret
+
+MAIL_USER=yourgmail@gmail.com
+MAIL_PASS=your_gmail_app_password
+
 PORT=3000
 
 ▶️ Running the Application
-Install dependencies
+
+Install dependencies:
+
 npm install
 
-Start the server
+
+Start the server:
+
 npm run start:dev
 
 
@@ -222,15 +245,15 @@ http://localhost:3000
 
 UUID used as primary key for scalability
 
-Cascade insert used to avoid manual multi-table saves
+Cascade inserts used to simplify multi-table operations
 
-Middleware used instead of complex auth libraries (simple & clear)
+JWT used for secure authentication
+
+Role-based access control enforced at API level
 
 Rate limiting applied globally
 
-Controller handles response, service handles business logic
-
-Relations fetched using TypeORM relations option
+Services handle business logic, controllers handle routing
 
 📌 Notes
 
@@ -238,24 +261,24 @@ synchronize: true is enabled only for development
 
 For production, migrations should be used
 
-position and salary are nullable by design
-
-Role header is mandatory for API access
+Role-based access and JWT token are mandatory for protected APIs
 
 🏁 Conclusion
 
-This project demonstrates a real-world NestJS backend pattern, including:
+This project demonstrates a complete real-world NestJS backend implementation including:
 
-Clean architecture
+Secure authentication and authorization
 
 Relational database handling
 
-Single API → multiple table inserts
+Role-based employee management
 
-Role-based middleware
+Email automation
 
 Rate limiting
 
-PDF & CSV generation
+PDF and CSV exports
 
-PostgreSQL integration
+📂 Repository
+
+https://github.com/snehalrathod9423/Employee-Details-Crud-operation.git
