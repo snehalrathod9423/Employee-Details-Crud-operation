@@ -2,12 +2,12 @@ import 'reflect-metadata';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { Module, MiddlewareConsumer } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule } from './employee/employee.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
-import { RoleMiddleware } from './common/middleware/role.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -26,11 +26,8 @@ import { RoleMiddleware } from './common/middleware/role.middleware';
       ttl: 60,
       limit: 10,
     }),
+    AuthModule,
     EmployeeModule,
   ],
 })
-export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RoleMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}

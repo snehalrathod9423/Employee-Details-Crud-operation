@@ -3,16 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Parser } from 'json2csv';
 import PDFDocument from 'pdfkit';
-
+import * as bcrypt from 'bcryptjs';
 
 import { Employee } from './employee.entity';
 import { CreateEmployeeWithDetailsDto } from './dto/create-employee-with-details.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class EmployeeService {
   constructor(
     @InjectRepository(Employee)
     private readonly repo: Repository<Employee>,
+    private readonly mailService: MailService, // ✅ INJECTED
   ) {}
 
   // ---------------- BASIC CRUD ----------------
@@ -115,14 +117,14 @@ export class EmployeeService {
 
     doc.moveDown();
     doc.text(`City: ${employee.address ? employee.address.city : '-'}`);
-doc.text(`State: ${employee.address ? employee.address.state : '-'}`);
-doc.text(`Pincode: ${employee.address ? employee.address.pincode : '-'}`);
+    doc.text(`State: ${employee.address ? employee.address.state : '-'}`);
+    doc.text(`Pincode: ${employee.address ? employee.address.pincode : '-'}`);
 
-doc.moveDown();
-doc.text('Bank Details');
-doc.text(`Bank Name: ${employee.bankDetails ? employee.bankDetails.bankName : '-'}`);
-doc.text(`Account Number: ${employee.bankDetails ? employee.bankDetails.accountNumber : '-'}`);
-doc.text(`IFSC Code: ${employee.bankDetails ? employee.bankDetails.ifscCode : '-'}`);
+    doc.moveDown();
+    doc.text('Bank Details');
+    doc.text(`Bank Name: ${employee.bankDetails ? employee.bankDetails.bankName : '-'}`);
+    doc.text(`Account Number: ${employee.bankDetails ? employee.bankDetails.accountNumber : '-'}`);
+    doc.text(`IFSC Code: ${employee.bankDetails ? employee.bankDetails.ifscCode : '-'}`);
     doc.end();
 
     return Buffer.concat(buffers);
@@ -145,5 +147,32 @@ doc.text(`IFSC Code: ${employee.bankDetails ? employee.bankDetails.ifscCode : '-
     });
 
     return parser.parse(employees);
+  }
+
+  // ---------------- ADMIN ADD EMPLOYEE ----------------
+
+  async addEmployee(body) {
+    const autoPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(autoPassword, 10);
+
+    // ✅ SAVE EMPLOYEE
+    const employee = this.repo.create({
+      firstName: body.firstName,
+      lastName: body.lastName,
+      email: body.mailID,
+      role: body.role,
+      password: hashedPassword,
+    });
+
+    await this.repo.save(employee);
+
+    // ✅ SEND EMAIL
+    await this.mailService.sendWelcomeMail(
+      body.mailID,
+      `${body.firstName} ${body.lastName}`,
+      autoPassword,
+    );
+
+    return { message: 'Employee added successfully' };
   }
 }

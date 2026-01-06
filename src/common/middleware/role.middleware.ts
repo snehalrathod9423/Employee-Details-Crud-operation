@@ -1,28 +1,24 @@
-import { Injectable, NestMiddleware, ForbiddenException } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 
 @Injectable()
-export class RoleMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
-  if (req.originalUrl.startsWith('/employees/pdf')) {
-    return next();
+export class RoleMiddleware implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+
+    if (!user) {
+      throw new ForbiddenException('User not found');
+    }
+
+    if (user.role !== 'Admin') {
+      throw new ForbiddenException('Only Admin can access this API');
+    }
+
+    return true;
   }
-
-  const userRole = req.headers['role'];
-
-  if (!userRole) {
-    throw new ForbiddenException('Role not provided');
-  }
-
-  if (
-    userRole !== 'ADMIN' &&
-    userRole !== 'HR' &&
-    userRole !== 'EMPLOYEE'
-  ) {
-    throw new ForbiddenException('Invalid role');
-  }
-
-  next();
-}
-
 }

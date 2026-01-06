@@ -5,6 +5,8 @@ import { EmployeeController } from './employee.controller';
 import { Employee } from './employee.entity';
 import { EmployeeAddress } from './employee-address.entity';
 import { EmployeeBankDetails } from './employee-bankdetails.entity';
+import { MailService } from '../mail/mail.service';
+
 
 @Module({
   imports: [
@@ -14,7 +16,10 @@ import { EmployeeBankDetails } from './employee-bankdetails.entity';
       EmployeeBankDetails,
     ]),
   ],
-  providers: [EmployeeService],
+  providers: [
+    EmployeeService,
+    MailService, // ✅ ADD THIS
+  ],
   controllers: [EmployeeController],
 })
 export class EmployeeModule {}

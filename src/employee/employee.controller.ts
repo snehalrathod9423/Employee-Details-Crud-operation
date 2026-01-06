@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -15,6 +16,9 @@ import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { CreateEmployeeWithDetailsDto } from './dto/create-employee-with-details.dto';
+
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RoleMiddleware } from '../common/middleware/role.middleware';
 
 @Controller('employees')
 export class EmployeeController {
@@ -88,5 +92,12 @@ export class EmployeeController {
     );
 
     res.send(csv);
+  }
+
+  //  ADMIN ONLY – Add employee (NEW API)
+  @UseGuards(JwtAuthGuard, RoleMiddleware)
+  @Post('add')
+  addEmployee(@Body() body) {
+    return this.svc.addEmployee(body);
   }
 }
