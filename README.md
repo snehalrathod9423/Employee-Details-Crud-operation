@@ -1,11 +1,11 @@
 🧑‍💼 Employee Details CRUD – Extended Implementation
 📌 Overview
 
-This project is a backend application built using NestJS, TypeORM, and PostgreSQL to perform CRUD operations on Employee data.
+This project is a NestJS + TypeORM + PostgreSQL based backend application that performs CRUD operations on Employee data.
 
-It has been extended to support related tables (employee_address, employee_bankdetails) and handle single-payload inserts into multiple tables using TypeORM relations and cascading.
+It supports related tables (employee_address, employee_bankdetails) and handles single-payload inserts into multiple tables using TypeORM relations and cascading.
 
-The project was further enhanced with authentication middleware, rate limiting, PDF generation, and CSV export features.
+The project is further enhanced with JWT authentication, role-based access, email notifications, login security policies, rate limiting, PDF generation, and CSV export.
 
 🛠 Tech Stack
 
@@ -16,12 +16,6 @@ Language: TypeScript
 ORM: TypeORM
 
 Database: PostgreSQL (SQLite supported for local testing)
-
-Authentication: JWT
-
-Validation: Joi
-
-Email: Nodemailer + Handlebars
 
 API Style: REST
 
@@ -42,13 +36,17 @@ employee_address
 
 employee_bankdetails
 
+users
+
+login_logs
+
 Relationships
 
 One Employee → One Address
 
 One Employee → One Bank Details
 
-All relationships are implemented using One-to-One mapping with foreign key references.
+All relations are implemented using One-to-One mapping with foreign key (employee_id).
 
 🧩 Entity Relationship (Conceptual)
 employee
@@ -74,43 +72,69 @@ Core Features
 
 ✅ PostgreSQL integration via environment variables
 
-🔐 Security & System Enhancements (New)
-✅ Role-Based Middleware
+🔐 Authentication & Security Enhancements (New)
+✅ JWT Authentication
 
-Simple role-based authentication using request headers
+SignUp & SignIn APIs implemented
 
-Supported roles:
+Token expiry set to 5 minutes
 
-ADMIN
+Passwords stored using bcrypt hashing
 
-HR
+✅ Password Policy Enforcement
 
-EMPLOYEE
+Failed login attempts are tracked
 
-Middleware validates role before request reaches controller
+Account is locked after 5 consecutive failed logins
 
-Example Header:
+Lock duration is 15 minutes
 
-role: ADMIN
+Account is automatically unlocked after lock time
 
-✅ Rate Limiting
+✅ Login Attempt Tracking
 
-Implemented using NestJS Throttler
+Both successful and failed login attempts are logged
 
-Limits requests to:
+Failed attempts increment counter
 
-10 requests per minute per client
+Successful login resets failed attempt count
 
-Prevents API abuse
+📧 Email Notifications Using Handlebars (New)
+
+Email system implemented using Nodemailer + Handlebars templates.
+
+Supported Email Scenarios:
+
+Welcome Email – Sent when a new employee is added
+
+Account Locked Notification – Sent when login attempts exceed limit
+
+Account Activated Notification – Sent when locked account becomes active again
+
+Email templates are maintained using .hbs files for better readability and reuse.
+
+👥 Employee Listing With Filters (New)
+Features:
+
+Pagination support
+
+Search and filter by:
+
+Name
+
+Email
+
+Role
+
+Implemented using TypeORM QueryBuilder.
 
 📥 Create Employee With Full Details
 
 Endpoint
-
 POST /employees/with-details
 
-
 Headers
+
 role: ADMIN
 Content-Type: application/json
 
@@ -140,98 +164,75 @@ Description
 
 Accepts a single payload
 
-Inserts data into employee, employee_address, and employee_bankdetails
+Inserts data into:
 
-Uses TypeORM cascade to persist related entities automatically
+employee
+
+employee_address
+
+employee_bankdetails
+
+Uses TypeORM cascade for persistence
 
 📤 Fetch Employee With Full Details
 
 Endpoint
-
 GET /employees/{id}/with-details
 
-
 Headers
+
 role: ADMIN
 
-Response
-{
-  "id": "uuid",
-  "firstName": "Snehal",
-  "lastName": "Rathod",
-  "email": "snehalrathod@gmail.com",
-  "position": "Backend Developer",
-  "salary": 50000,
-  "address": {
-    "city": "Pune",
-    "state": "MH",
-    "pincode": "411001"
-  },
-  "bankDetails": {
-    "bankName": "HDFC",
-    "accountNumber": "123456789",
-    "ifscCode": "HDFC000123"
-  }
-}
+📄 Generate Employee PDF
 
-📄 Generate Employee PDF (New Feature)
 Endpoint
-
 GET /employees/pdf/{id}
 
 Headers
+
 role: ADMIN
+
 
 Description
 
-Generates a PDF file containing:
+Generates downloadable PDF
 
-Employee basic details
+Includes employee, address, and bank details
 
-Address details
-
-Bank details
-
-Implemented using pdfkit
+Uses pdfkit
 
 📊 Export Employees as CSV
 
 Endpoint
-
 GET /employees/export/csv
 
 Headers
+
 role: ADMIN
 
+
 Description
-Final exports all employee records into a CSV file using json2csv.
 
-🚦 Rate Limiting
-
-Implemented using NestJS Throttler
-
-Exports all employees into a CSV file
+Exports all employee data into CSV
 
 Uses json2csv
 
-Useful for reporting and data sharing
-
 🔐 Environment Configuration
 
-Create a .env file in the root directory:
+Create a .env file:
 
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASS=your_db_password
+DB_PASS=postgres
 DB_NAME=employee_db
+JWT_SECRET=your_secret
+MAIL_USER=your_email@gmail.com
+MAIL_PASS=your_app_password
 PORT=3000
 
 ▶️ Running the Application
-Install dependencies
 npm install
-
-Start the server
 npm run start:dev
 
 
@@ -245,15 +246,13 @@ UUID used for scalability
 
 Cascade inserts to avoid manual multi-table operations
 
-Cascade insert used to avoid manual multi-table saves
+JWT-based auth instead of session-based
 
-Middleware used instead of complex auth libraries (simple & clear)
+Handlebars used for reusable email templates
 
 Rate limiting applied globally
 
-Controller handles response, service handles business logic
-
-Relations fetched using TypeORM relations option
+Clean separation between controller and service layers
 
 📌 Notes
 
@@ -261,24 +260,22 @@ synchronize: true enabled only for development
 
 For production, migrations should be used
 
-position and salary are nullable by design
+Role header is mandatory for protected APIs
 
-Role header is mandatory for API access
+Passwords are never stored in plain text
 
 🏁 Conclusion
 
-This project demonstrates a real-world NestJS backend pattern, including:
+This project demonstrates a real-world NestJS backend implementation covering:
 
-Clean architecture
+Secure authentication
 
 Account security policies
 
-Single API → multiple table inserts
+Email automation
 
-Role-based middleware
+Multi-table database operations
 
 Pagination & filtering
 
-PDF & CSV generation
-
-PostgreSQL integration
+PDF and CSV generation
