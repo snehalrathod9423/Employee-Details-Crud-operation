@@ -100,4 +100,25 @@ export class EmployeeController {
   addEmployee(@Body() body) {
     return this.svc.addEmployee(body);
   }
+
+  @Get()
+   findAll(
+   @Query('page') page = '1',
+   @Query('limit') limit = '10',
+   @Query('role') role?: string,
+   @Query('search') search?: string,
+   ) {
+   return this.employeeService.findAll({
+    page: Number(page),
+    limit: Number(limit),
+    role,
+    search,
+  });
+  }
+  @Get('list')
+  getEmployeeList(@Query() query) {
+  return this.svc.listEmployeesWithFilters(query);
+  }
+
+
 }

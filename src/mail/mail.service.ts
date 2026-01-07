@@ -8,26 +8,25 @@ import * as hbs from 'handlebars';
 export class MailService {
   private readonly logger = new Logger(MailService.name);
 
-  async sendWelcomeMail(email: string, name: string, password: string) {
+  // ---------------- COMMON MAIL SENDER ----------------
+  private async sendMail(
+    to: string,
+    subject: string,
+    templateName: string,
+    data: any,
+  ) {
     try {
-      // 1. Read handlebars template
       const templatePath = path.join(
         __dirname,
         'templates',
-        'welcome.hbs',
+        `${templateName}.hbs`,
       );
 
       const source = fs.readFileSync(templatePath, 'utf8');
       const template = hbs.compile(source);
 
-      // 2. Replace values in template
-      const html = template({
-        name,
-        email,
-        password,
-      });
+      const html = template(data);
 
-      // 3. Create mail transporter
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -36,15 +35,37 @@ export class MailService {
         },
       });
 
-      // 4. Send email
       await transporter.sendMail({
         from: process.env.MAIL_USER,
-        to: email,
-        subject: 'Welcome to Company',
+        to,
+        subject,
         html,
       });
     } catch (error) {
-      this.logger.error('Error while sending welcome email', error);
+      this.logger.error(`Error while sending ${subject} mail`, error);
     }
+  }
+
+  // ---------------- WELCOME EMAIL ----------------
+  async sendWelcomeMail(email: string, name: string, password: string) {
+    await this.sendMail(email, 'Welcome to Company', 'welcome', {
+      name,
+      email,
+      password,
+    });
+  }
+
+  // ---------------- ACCOUNT LOCKED EMAIL ----------------
+  async sendAccountLockedMail(email: string, name: string) {
+    await this.sendMail(email, 'Account Locked', 'account-locked', {
+      name,
+    });
+  }
+
+  // ---------------- ACCOUNT ACTIVATED EMAIL ----------------
+  async sendAccountActivatedMail(email: string, name: string) {
+    await this.sendMail(email, 'Account Activated', 'account-activated', {
+      name,
+    });
   }
 }

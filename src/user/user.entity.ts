@@ -22,4 +22,12 @@ export class User {
 
   @Column()
   status: string;
+
+  // ---------------- LOGIN TRACKING ----------------
+
+  @Column({ default: 0 })
+  failedLoginAttempts: number;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lockUntil: Date;
 }

@@ -14,7 +14,7 @@ export class EmployeeService {
   constructor(
     @InjectRepository(Employee)
     private readonly repo: Repository<Employee>,
-    private readonly mailService: MailService, // ✅ INJECTED
+    private readonly mailService: MailService,
   ) {}
 
   // ---------------- BASIC CRUD ----------------
@@ -61,7 +61,7 @@ export class EmployeeService {
     return this.repo.save(employee);
   }
 
-  // ---------------- FIND ALL ----------------
+  // ---------------- FIND ALL (OLD) ----------------
 
   findAll(opts?: { page?: number; limit?: number; search?: string }) {
     const qb = this.repo.createQueryBuilder('employee');
@@ -155,7 +155,6 @@ export class EmployeeService {
     const autoPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(autoPassword, 10);
 
-    // ✅ SAVE EMPLOYEE
     const employee = this.repo.create({
       firstName: body.firstName,
       lastName: body.lastName,
@@ -166,7 +165,6 @@ export class EmployeeService {
 
     await this.repo.save(employee);
 
-    // ✅ SEND EMAIL
     await this.mailService.sendWelcomeMail(
       body.mailID,
       `${body.firstName} ${body.lastName}`,
@@ -174,5 +172,44 @@ export class EmployeeService {
     );
 
     return { message: 'Employee added successfully' };
+  }
+
+  // ---------------- NEW: LIST WITH FILTERS + PAGINATION ----------------
+
+  async listEmployeesWithFilters(query: any) {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+
+    const qb = this.repo.createQueryBuilder('employee');
+
+    if (query.name) {
+      qb.andWhere(
+        '(employee.firstName ILIKE :name OR employee.lastName ILIKE :name)',
+        { name: `%${query.name}%` },
+      );
+    }
+
+    if (query.email) {
+      qb.andWhere('employee.email ILIKE :email', {
+        email: `%${query.email}%`,
+      });
+    }
+
+    if (query.role) {
+      qb.andWhere('employee.role = :role', {
+        role: query.role,
+      });
+    }
+
+    qb.skip((page - 1) * limit).take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return {
+      total,
+      page,
+      limit,
+      data,
+    };
   }
 }

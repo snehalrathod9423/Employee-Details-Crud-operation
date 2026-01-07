@@ -3,9 +3,9 @@
 
 This project is a backend application built using NestJS, TypeORM, and PostgreSQL to perform CRUD operations on Employee data.
 
-It supports relational data handling with multiple tables (employee, employee_address, employee_bankdetails) and allows inserting data into multiple tables using a single payload through TypeORM cascading.
+It has been extended to support related tables (employee_address, employee_bankdetails) and handle single-payload inserts into multiple tables using TypeORM relations and cascading.
 
-The project has been further enhanced with JWT-based authentication, role-based access control, email notifications, rate limiting, PDF generation, and CSV export features.
+The project was further enhanced with authentication middleware, rate limiting, PDF generation, and CSV export features.
 
 🛠 Tech Stack
 
@@ -25,6 +25,12 @@ Email: Nodemailer + Handlebars
 
 API Style: REST
 
+Validation: Joi
+
+Authentication: JWT
+
+Email: Nodemailer + Handlebars
+
 Tools: Postman, pgAdmin
 
 🗄 Database Design
@@ -35,8 +41,6 @@ employee
 employee_address
 
 employee_bankdetails
-
-users
 
 Relationships
 
@@ -52,57 +56,52 @@ employee
  └── employee_bankdetails
 
 🚀 Features Implemented
-🔐 Authentication & Authorization (New)
+Core Features
 
-User SignUp and SignIn using JWT authentication
+✅ Create employee
 
-JWT token expiry set to 5 minutes
+✅ Update employee
 
-Password hashing using bcrypt
+✅ Delete employee
 
-Protected APIs using JWT guards
+✅ Pagination & search
 
-Role-Based Access Control (RBAC)
+✅ Create employee with address & bank details (single payload)
 
-Only Admin users can add employees
+✅ Fetch employee with all related details
 
-👤 User APIs
+✅ UUID-based primary keys
 
-SignUp
+✅ PostgreSQL integration via environment variables
 
-Validates name, email, password, mobile number, and role (Admin, Manager)
+🔐 Security & System Enhancements (New)
+✅ Role-Based Middleware
 
-Checks if email already exists
+Simple role-based authentication using request headers
 
-Stores encrypted password
+Supported roles:
 
-SignIn
+ADMIN
 
-Validates credentials
+HR
 
-Returns JWT token with expiry
+EMPLOYEE
 
-getUserDetails
+Middleware validates role before request reaches controller
 
-Fetches logged-in user details using token authentication
+Example Header:
 
-👨‍💼 Employee Management
+role: ADMIN
 
-Create employee
+✅ Rate Limiting
 
-Update employee
+Implemented using NestJS Throttler
 
-Delete employee
+Limits requests to:
 
-Pagination and search support
+10 requests per minute per client
 
-Create employee with address & bank details using a single payload
-
-Fetch employee along with all related details
-
-Auto-generate password for newly added employees (Admin only)
-
-Securely store generated passwords using bcrypt
+Prevents API abuse
 
 📥 Create Employee With Full Details
 
@@ -112,8 +111,7 @@ POST /employees/with-details
 
 
 Headers
-
-Authorization: Bearer <JWT_TOKEN>
+role: ADMIN
 Content-Type: application/json
 
 
@@ -144,7 +142,7 @@ Accepts a single payload
 
 Inserts data into employee, employee_address, and employee_bankdetails
 
-Uses TypeORM cascade to persist related entities
+Uses TypeORM cascade to persist related entities automatically
 
 📤 Fetch Employee With Full Details
 
@@ -154,33 +152,41 @@ GET /employees/{id}/with-details
 
 
 Headers
+role: ADMIN
 
-Authorization: Bearer <JWT_TOKEN>
+Response
+{
+  "id": "uuid",
+  "firstName": "Snehal",
+  "lastName": "Rathod",
+  "email": "snehalrathod@gmail.com",
+  "position": "Backend Developer",
+  "salary": 50000,
+  "address": {
+    "city": "Pune",
+    "state": "MH",
+    "pincode": "411001"
+  },
+  "bankDetails": {
+    "bankName": "HDFC",
+    "accountNumber": "123456789",
+    "ifscCode": "HDFC000123"
+  }
+}
 
-📧 Email Notification (New)
-
-Integrated Nodemailer with Gmail SMTP
-
-Used Handlebars templates for dynamic HTML emails
-
-Automatically sends welcome email with login credentials
-
-Credentials are shared in table format
-
-Email is triggered when an Admin adds a new employee
-
-📄 Generate Employee PDF
-
+📄 Generate Employee PDF (New Feature)
 Endpoint
 
 GET /employees/pdf/{id}
 
+Headers
+role: ADMIN
 
 Description
 
-Generates a downloadable PDF containing:
+Generates a PDF file containing:
 
-Employee details
+Employee basic details
 
 Address details
 
@@ -194,6 +200,8 @@ Endpoint
 
 GET /employees/export/csv
 
+Headers
+role: ADMIN
 
 Description
 Final exports all employee records into a CSV file using json2csv.
@@ -202,11 +210,11 @@ Final exports all employee records into a CSV file using json2csv.
 
 Implemented using NestJS Throttler
 
-Limits requests to:
+Exports all employees into a CSV file
 
-10 requests per minute per client
+Uses json2csv
 
-Prevents API abuse
+Useful for reporting and data sharing
 
 🔐 Environment Configuration
 
@@ -217,68 +225,60 @@ DB_PORT=5432
 DB_USER=postgres
 DB_PASS=your_db_password
 DB_NAME=employee_db
-
-JWT_SECRET=your_jwt_secret
-
-MAIL_USER=yourgmail@gmail.com
-MAIL_PASS=your_gmail_app_password
-
 PORT=3000
 
 ▶️ Running the Application
-
-Install dependencies:
-
+Install dependencies
 npm install
 
-
-Start the server:
-
+Start the server
 npm run start:dev
 
 
-Server will run at:
+Server runs at:
 
 http://localhost:3000
 
 🧠 Key Design Decisions
 
-UUID used as primary key for scalability
+UUID used for scalability
 
-Cascade inserts used to simplify multi-table operations
+Cascade inserts to avoid manual multi-table operations
 
-JWT used for secure authentication
+Cascade insert used to avoid manual multi-table saves
 
-Role-based access control enforced at API level
+Middleware used instead of complex auth libraries (simple & clear)
 
 Rate limiting applied globally
 
-Services handle business logic, controllers handle routing
+Controller handles response, service handles business logic
+
+Relations fetched using TypeORM relations option
 
 📌 Notes
 
-synchronize: true is enabled only for development
+synchronize: true enabled only for development
 
 For production, migrations should be used
 
-Role-based access and JWT token are mandatory for protected APIs
+position and salary are nullable by design
+
+Role header is mandatory for API access
 
 🏁 Conclusion
 
-This project demonstrates a complete real-world NestJS backend implementation including:
+This project demonstrates a real-world NestJS backend pattern, including:
 
-Secure authentication and authorization
+Clean architecture
 
-Relational database handling
+Account security policies
 
-Role-based employee management
+Single API → multiple table inserts
 
-Email automation
+Role-based middleware
 
-Rate limiting
+Pagination & filtering
 
-PDF and CSV exports
+PDF & CSV generation
 
-📂 Repository
-
-https://github.com/snehalrathod9423/Employee-Details-Crud-operation.git
+PostgreSQL integration
