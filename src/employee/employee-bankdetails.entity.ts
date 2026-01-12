@@ -10,7 +10,7 @@ import { Employee } from './employee.entity';
 @Entity('employee_bankdetails')
 export class EmployeeBankDetails {
   @PrimaryGeneratedColumn()
-  id: number;   // ✅ FIXED (number, not string)
+  id: number;   
 
   @Column()
   bankName: string;
@@ -21,7 +21,7 @@ export class EmployeeBankDetails {
   @Column()
   ifscCode: string;
 
-  @OneToOne(() => Employee, employee => employee.bankDetails)
+  @OneToOne(() => Employee, employee => employee.bankDetails, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'employee_id' })
   employee: Employee;
 }

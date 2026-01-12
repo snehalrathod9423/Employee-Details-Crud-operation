@@ -5,11 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { EmployeeAddress } from './employee-address.entity';
 import { EmployeeBankDetails } from './employee-bankdetails.entity';
 
-@Entity()
+@Entity('employee')
 export class Employee {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -30,17 +31,22 @@ export class Employee {
   salary: number;
 
   @Column({ default: 'EMPLOYEE' })
-  role: string; // ADMIN | HR | EMPLOYEE
+  role: string;
+
+  @Column({ default: 'ACTIVE' })
+  status: string; // ✅ REQUIRED for account control
 
   @OneToOne(() => EmployeeAddress, address => address.employee, {
-    cascade: true,
+  cascade: true,
   })
+   @JoinColumn()
   address: EmployeeAddress;
 
   @OneToOne(() => EmployeeBankDetails, bank => bank.employee, {
-    cascade: true,
+  cascade: true,
   })
-  bankDetails: EmployeeBankDetails;
+@JoinColumn()
+bankDetails: EmployeeBankDetails;
 
   @CreateDateColumn()
   createdAt: Date;

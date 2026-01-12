@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Parser } from 'json2csv';
-import PDFDocument from 'pdfkit';
+import * as PDFDocument from 'pdfkit';
 import * as bcrypt from 'bcryptjs';
 
 import { Employee } from './employee.entity';
@@ -98,13 +98,17 @@ export class EmployeeService {
   // ---------------- PDF GENERATION ----------------
 
   async generateEmployeePdf(id: string): Promise<Buffer> {
-    const employee = await this.findOneWithDetails(id);
+  const employee = await this.findOneWithDetails(id);
 
+  return new Promise((resolve, reject) => {
     const doc = new PDFDocument();
     const buffers: Buffer[] = [];
 
     doc.on('data', (chunk) => buffers.push(chunk));
-    doc.on('end', () => {});
+    doc.on('end', () => {
+      resolve(Buffer.concat(buffers));
+    });
+    doc.on('error', (err) => reject(err));
 
     doc.fontSize(18).text('Employee Details', { underline: true });
     doc.moveDown();
@@ -122,13 +126,24 @@ export class EmployeeService {
 
     doc.moveDown();
     doc.text('Bank Details');
-    doc.text(`Bank Name: ${employee.bankDetails ? employee.bankDetails.bankName : '-'}`);
-    doc.text(`Account Number: ${employee.bankDetails ? employee.bankDetails.accountNumber : '-'}`);
-    doc.text(`IFSC Code: ${employee.bankDetails ? employee.bankDetails.ifscCode : '-'}`);
-    doc.end();
+    doc.text(
+      `Bank Name: ${employee.bankDetails ? employee.bankDetails.bankName : '-'}`,
+    );
+    doc.text(
+      `Account Number: ${
+        employee.bankDetails ? employee.bankDetails.accountNumber : '-'
+      }`,
+    );
+    doc.text(
+      `IFSC Code: ${
+        employee.bankDetails ? employee.bankDetails.ifscCode : '-'
+      }`,
+    );
 
-    return Buffer.concat(buffers);
-  }
+    doc.end();
+  });
+}
+
 
   // ---------------- CSV EXPORT ----------------
 
@@ -160,7 +175,6 @@ export class EmployeeService {
       lastName: body.lastName,
       email: body.mailID,
       role: body.role,
-      password: hashedPassword,
     });
 
     await this.repo.save(employee);

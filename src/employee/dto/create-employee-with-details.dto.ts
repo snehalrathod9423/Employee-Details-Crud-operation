@@ -1,21 +1,26 @@
-export class CreateEmployeeWithDetailsDto {
-  id?: string; // optional, not used for insert
+import { IsString, IsEmail, IsOptional, IsNumber } from 'class-validator';
+import { EmployeeAddress } from '../employee-address.entity';
+import { EmployeeBankDetails } from '../employee-bankdetails.entity';
 
+export class CreateEmployeeWithDetailsDto {
+  @IsString()
   firstName: string;
+
+  @IsString()
   lastName: string;
+
+  @IsEmail()
   email: string;
+
+  @IsOptional()
+  @IsString()
   position?: string;
+
+  @IsOptional()
+  @IsNumber()
   salary?: number;
 
-  address: {
-    city: string;
-    state: string;
-    pincode: string;
-  };
+  address: EmployeeAddress;
 
-  bankDetails: {
-    bankName: string;
-    accountNumber: string;
-    ifscCode: string;
-  };
+  bankDetails: EmployeeBankDetails;
 }

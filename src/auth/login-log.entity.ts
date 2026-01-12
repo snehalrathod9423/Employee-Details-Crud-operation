@@ -14,7 +14,7 @@ export class LoginLog {
   mailID: string;
 
   @Column()
-  status: string; // SUCCESS | FAILED
+  status: string; 
 
   @CreateDateColumn()
   createdAt: Date;

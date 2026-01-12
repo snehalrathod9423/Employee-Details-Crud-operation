@@ -39,9 +39,11 @@ export class AuthService {
         mobile: body.mobile,
         role: body.role,
         status: 'ACTIVE',
+        failedLoginAttempts: 0,
+        lockUntil: null,
       });
     } catch (error) {
-      throw new BadRequestException('Email already exists');
+      throw new BadRequestException('Unable to create user');
     }
 
     return { message: 'User registered successfully' };
@@ -57,57 +59,69 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 1. If lock expired → unlock account
+    // 🔓 Unlock account if lock expired
     if (user.lockUntil && user.lockUntil <= new Date()) {
       user.failedLoginAttempts = 0;
       user.lockUntil = null;
-
       await this.userRepo.save(user);
 
-      // Send account activated mail
       await this.mailService.sendAccountActivatedMail(
         user.mailID,
         user.name,
       );
+
+      console.log('Account activated:', user.mailID);
     }
 
-    // 2. If still locked
+    // 🔒 Block login if account is locked
     if (user.lockUntil && user.lockUntil > new Date()) {
+      console.log('Login blocked, account locked:', user.mailID);
       throw new UnauthorizedException(
-        'Account is locked. Please try again after some time.',
+        'Account is locked. Please try again later.',
       );
     }
 
-    // 3. Compare password
+    // 🔑 Password check
     const isPasswordValid = await bcrypt.compare(
       body.password,
       user.password,
     );
 
-    // 4. Wrong password
+    // ❌ Wrong password
     if (!isPasswordValid) {
-      user.failedLoginAttempts += 1;
+      user.failedLoginAttempts =
+        (user.failedLoginAttempts || 0) + 1;
 
-      // Lock after 5 attempts
-      if (user.failedLoginAttempts >= 5) {
-        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+      console.log(
+        `Failed attempt ${user.failedLoginAttempts} for ${user.mailID}`,
+      );
+
+      // 🔒 Lock on 5th attempt
+      if (user.failedLoginAttempts === 5) {
+        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+
+        await this.userRepo.save(user);
 
         await this.mailService.sendAccountLockedMail(
           user.mailID,
           user.name,
         );
+
+        console.log('Account locked & email sent:', user.mailID);
+      } else {
+        await this.userRepo.save(user);
       }
 
-      await this.userRepo.save(user);
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 5. Successful login → reset counters
+    // ✅ Successful login
     user.failedLoginAttempts = 0;
     user.lockUntil = null;
     await this.userRepo.save(user);
 
-    // 6. Generate token
+    console.log('Login successful:', user.mailID);
+
     const token = this.jwtService.sign({
       id: user.id,
       role: user.role,

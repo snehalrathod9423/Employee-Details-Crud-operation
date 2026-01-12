@@ -15,7 +15,7 @@ import { MailModule } from '../mail/mail.module'; // ✅ ADD THIS
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '5m' },
     }),
-    MailModule, // ✅ IMPORTANT
+    MailModule, 
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
